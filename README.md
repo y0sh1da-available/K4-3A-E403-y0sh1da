@@ -4,14 +4,13 @@
 
 ## 👥 Thành viên nhóm & Phân công vai trò
 
-**Lớp:** 3A · **Phòng:** ____ · **Cụm:** ____ · **Track:** ____
+**Lớp:** 3A · **Phòng:** E403 · **Cụm:** ____ · **Track:** Track A · VLearn Tutor
 
 | Họ và Tên | Mã Học Viên | Vai trò chính | Phần việc đảm nhiệm trong dự án |
 |---|---|---|---|
-|  |  |  |  |
-|  |  |  |  |
-|  |  |  |  |
-|  |  |  |  |
+| Đặng Hữu Cương | 2A202602572 | Đội trưởng · Product Owner | Quản lý tiến độ, chốt Spec & Canvas, phụ trách nộp các Checkpoint, chuẩn bị slide & pitch demo |
+| Trần Đức Lộc | 2A202602431 | Data & Evaluation Lead | Thiết kế Canvas 1 & 2 |
+| Nguyễn Minh Đức | 2A202602783 | AI & Prototype Lead | Thiết kế Canvas 3 & 4 |
 
 > Nhóm copy nguyên file README này về repo của mình, rồi điền bảng trên. Cột **Phần việc đảm nhiệm** ghi càng cụ thể càng tốt.
 
