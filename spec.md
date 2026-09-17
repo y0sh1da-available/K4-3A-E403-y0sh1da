@@ -153,10 +153,17 @@ Bộ 20 kịch bản kiểm thử được lưu trữ đầy đủ trong file [`
 
 ## §8. Phân công & Kế hoạch
 
-- **Phân công thành viên nhóm `y0sh1da`:**
-  - **Đặng Hữu Cương** (Trưởng nhóm - MSSV: `2A202602572`): Quản lý tiến độ, xây dựng AI Spec (§1-§9), phân tích bộ dữ liệu bằng chứng K4 (`DATA_EVIDENCE_VERIFICATION.md`), xây dựng kịch bản kiểm thử Golden Set và điều phối CP4/CP5.
-  - **Nguyễn Minh Đức**: Thiết kế kiến trúc Backend API (FastAPI), tích hợp dịch vụ OpenAI Structured Outputs, lập trình lớp bảo vệ Deterministic Guardrail, quản lý file log kỹ thuật `eval.log`.
-  - **Trần Đức Lộc**: Thiết kế và lập trình giao diện Web Playground (HTML/CSS/JS), hoàn thiện các trạng thái hiển thị phản hồi Case A/B/C và chuẩn bị video demo.
+- **Bảng phân công nhiệm vụ theo chuẩn 5 phần việc (spec / evidence / prompt / code / demo):**
+
+| Thành viên | Mã học viên | Trách nhiệm chính (spec / evidence / prompt / code / demo) | Chi tiết sản phẩm bàn giao |
+|---|---|---|---|
+| **Đặng Hữu Cương** | `2A202602572` | **Spec · Evidence · Prompt · Pitch** | Viết & chốt AI Spec (`spec.md` §1-§9), phân tích log dữ liệu K4 (`DATA_EVIDENCE_VERIFICATION.md`), thiết kế System Prompt và điều phối đo đạc Golden Set, chuẩn bị slide và thuyết trình demo. |
+| **Nguyễn Minh Đức** | `2A202602783` | **Code (Backend) · Safeguard · Logging** | Xây dựng Backend API (FastAPI), tích hợp OpenAI `gpt-5-nano` với Structured Outputs, lập trình Deterministic Guardrail chống ảo giác nguồn, ghi log kỹ thuật `eval.log`. |
+| **Trần Đức Lộc** | `2A202602431` | **Code (Frontend) · UI/UX · Video Demo** | Xây dựng giao diện Web Playground tương tác (`codebase/fronten/`), xử lý trực quan 3 Case A/B/C và khung Citation, quay video demo thao tác 30s (CP3) và video dự phòng (CP5). |
+
+- **Kế hoạch cho LEC 6 & LAB 6 (Validation & Dry Run):**
+  - *Validation với Willing Users (LEC 6):* Đặng Hữu Cương và Trần Đức Lộc điều phối 2 Willing Users (`Thân Tiến Đạt` và `Vũ Gia Khải`) thao tác trên Web Playground, ghi nhận nhật ký phản hồi theo chuẩn R6 vào `validation/`.
+  - *Dry Run buổi thuyết trình (trước CP5 - 13:00 18/9):* Cả 3 thành viên chạy thử pitch 5 phút theo slide 6 trang `demo-slides.pdf`, kiểm tra kịch bản live demo và video demo dự phòng (mỗi thành viên nói $\ge 1$ phần theo quy định).
 
 - **Willing Users tham gia kiểm thử người dùng (Validation vòng trong):**
   1. *Thân Tiến Đạt* (MSSV: `2A202603023` - Đóng vai người học hỏi bài giảng trực tiếp, kiểm thử Case A).
