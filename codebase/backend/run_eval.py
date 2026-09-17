@@ -1,98 +1,405 @@
-﻿import json
+import json
 import time
 from pathlib import Path
 import sys
 
-# Thêm thư mục backend vào sys.path để import app
+
+# =========================================================
+# Paths
+# =========================================================
+
 BACKEND_DIR = Path(__file__).resolve().parent
-sys.path.insert(0, str(BACKEND_DIR))
+
+# repo/
+# ├── codebase/
+# │   └── backend/
+# │       └── run_eval.py
+# └── eval/
+REPO_ROOT = BACKEND_DIR.parents[1]
+
+sys.path.insert(
+    0,
+    str(BACKEND_DIR),
+)
+
 
 from app.schemas import ChatRequest
 from app.services.tutor_service import handle_chat
 
-def main():
-    root_dir = BACKEND_DIR.parents[1] if (BACKEND_DIR.parents[1] / 'eval').exists() else BACKEND_DIR.parent.parent
-    golden_set_path = root_dir / 'eval' / 'golden_set.json'
-    
-    if not golden_set_path.exists():
-        # Thử tìm tương đối
-        golden_set_path = Path('eval/golden_set.json')
-        if not golden_set_path.exists():
-            print(f'Error: Không tìm thấy file {golden_set_path}')
-            return
 
-    with open(golden_set_path, 'r', encoding='utf-8') as f:
-        cases = json.load(f)
+GOLDEN_SET_PATH = (
+    REPO_ROOT
+    / "eval"
+    / "golden_set.json"
+)
 
-    print('=' * 80)
-    print(f'🚀 BẮT ĐẦU CHẠY EVALUATION BỘ GOLDEN SET ({len(cases)} CA KIỂM THỬ)')
-    print('=' * 80)
+RESULTS_PATH = (
+    REPO_ROOT
+    / "eval"
+    / "run_results.md"
+)
 
-    passed = 0
-    failed = 0
-    results = []
-    
-    log_dir = BACKEND_DIR / 'logs'
-    log_dir.mkdir(exist_ok=True)
-    log_file = log_dir / 'eval.log'
 
-    with open(log_file, 'a', encoding='utf-8') as log_f:
-        log_f.write(f'\n--- EVAL RUN: {time.strftime(\"%Y-%m-%d %H:%M:%S\")} ---\n')
+# =========================================================
+# Load Golden Set
+# =========================================================
 
-        for i, c in enumerate(cases, 1):
-            req = ChatRequest(
-                user_input=c['user_input'],
-                slide_context=c['slide_context'],
-                slide_page=c['slide_page']
+def load_golden_set() -> list[dict]:
+
+    if not GOLDEN_SET_PATH.exists():
+        raise FileNotFoundError(
+            f"Không tìm thấy Golden Set: "
+            f"{GOLDEN_SET_PATH}"
+        )
+
+    with GOLDEN_SET_PATH.open(
+        "r",
+        encoding="utf-8",
+    ) as file:
+        cases = json.load(file)
+
+    if not isinstance(cases, list):
+        raise ValueError(
+            "golden_set.json phải là một JSON array."
+        )
+
+    return cases
+
+
+# =========================================================
+# Run One Case
+# =========================================================
+
+def run_case(
+    case: dict,
+) -> dict:
+
+    request = ChatRequest(
+        user_input=case["user_input"],
+        slide_context=case["slide_context"],
+        slide_page=case["slide_page"],
+    )
+
+    start_t = time.perf_counter()
+
+    try:
+        response = handle_chat(request)
+
+        latency_ms = round(
+            (
+                time.perf_counter()
+                - start_t
             )
+            * 1000,
+            2,
+        )
 
-            start_t = time.time()
-            try:
-                resp = handle_chat(req)
-                latency_ms = int((time.time() - start_t) * 1000)
-                is_match = (resp.case == c['expected_case'])
+        case_match = (
+            response.case
+            == case["expected_case"]
+        )
 
-                if is_match:
-                    passed += 1
-                    status = '✅ PASS'
-                else:
-                    failed += 1
-                    status = '❌ FAIL'
+        action_match = (
+            response.action
+            == case["expected_action"]
+        )
 
-                print(f'[{i:02d}/20] {status} | Case: {c[\"id\"]} ({c[\"layer\"]})')
-                print(f'     User: \"{c[\"user_input\"]}\"')
-                print(f'     Kỳ vọng: {c[\"expected_case\"]} ({c[\"expected_action\"]}) -> Thực tế: {resp.case} ({resp.action}) [{latency_ms}ms]')
-                if not is_match:
-                    print(f'     ⚠️ Lý do: Model trả về {resp.case}, phản hồi: \"{resp.reply_text[:60]}...\"')
-                print('-' * 80)
+        passed = (
+            case_match
+            and action_match
+        )
 
-                log_entry = {
-                    'timestamp': time.strftime('%Y-%m-%d %H:%M:%S'),
-                    'case_id': c['id'],
-                    'user_input': c['user_input'],
-                    'expected': c['expected_case'],
-                    'actual': resp.case,
-                    'is_pass': is_match,
-                    'latency_ms': latency_ms,
-                    'reply_text': resp.reply_text
-                }
-                log_f.write(json.dumps(log_entry, ensure_ascii=False) + '\n')
+        return {
+            "id": case["id"],
+            "layer": case.get(
+                "layer",
+                case.get(
+                    "taxonomy",
+                    "UNKNOWN",
+                ),
+            ),
+            "source": case.get(
+                "source",
+                "UNKNOWN",
+            ),
+            "expected_case": (
+                case["expected_case"]
+            ),
+            "actual_case": response.case,
+            "expected_action": (
+                case["expected_action"]
+            ),
+            "actual_action": response.action,
+            "reply_text": response.reply_text,
+            "latency_ms": latency_ms,
+            "passed": passed,
+            "error": None,
+        }
 
-            except Exception as e:
-                failed += 1
-                print(f'[{i:02d}/20] ❌ ERROR | Case: {c[\"id\"]}: {e}')
-                print('-' * 80)
+    except Exception as exc:
 
-    total = passed + failed
-    accuracy = (passed / total * 100) if total > 0 else 0
-    print('=' * 80)
-    print(f'📊 KẾT QUẢ EVALUATION CUỐI CÙNG:')
-    print(f'   - Tổng số test cases: {total}')
-    print(f'   - Số ca đạt chuẩn: {passed}')
-    print(f'   - Số ca chưa đạt: {failed}')
-    print(f'   - ĐỘ CHÍNH XÁC (ACCURACY): {accuracy:.1f}%')
-    print(f'   - File log chi tiết đã lưu tại: {log_file}')
-    print('=' * 80)
+        latency_ms = round(
+            (
+                time.perf_counter()
+                - start_t
+            )
+            * 1000,
+            2,
+        )
 
-if __name__ == '__main__':
+        return {
+            "id": case["id"],
+            "layer": case.get(
+                "layer",
+                case.get(
+                    "taxonomy",
+                    "UNKNOWN",
+                ),
+            ),
+            "source": case.get(
+                "source",
+                "UNKNOWN",
+            ),
+            "expected_case": (
+                case["expected_case"]
+            ),
+            "actual_case": "ERROR",
+            "expected_action": (
+                case["expected_action"]
+            ),
+            "actual_action": None,
+            "reply_text": "",
+            "latency_ms": latency_ms,
+            "passed": False,
+            "error": (
+                f"{type(exc).__name__}: "
+                f"{exc}"
+            ),
+        }
+
+
+# =========================================================
+# Generate Markdown Report
+# =========================================================
+
+def write_report(
+    results: list[dict],
+) -> None:
+
+    total = len(results)
+
+    passed = sum(
+        1
+        for result in results
+        if result["passed"]
+    )
+
+    failed = total - passed
+
+    pass_rate = (
+        passed / total * 100
+        if total
+        else 0
+    )
+
+    avg_latency = (
+        sum(
+            result["latency_ms"]
+            for result in results
+        )
+        / total
+        if total
+        else 0
+    )
+
+    lines = [
+        "# Golden Set Evaluation Results",
+        "",
+        "## Summary",
+        "",
+        f"- Total cases: **{total}**",
+        f"- Passed: **{passed}**",
+        f"- Failed: **{failed}**",
+        f"- Pass rate: **{pass_rate:.1f}%**",
+        (
+            "- Average end-to-end latency: "
+            f"**{avg_latency:.2f} ms**"
+        ),
+        "",
+        "## Detailed Results",
+        "",
+        (
+            "| ID | Layer | Source | Expected | "
+            "Actual | Result | Latency |"
+        ),
+        (
+            "|---|---|---|---|---|---|---:|"
+        ),
+    ]
+
+    for result in results:
+
+        status = (
+            "✅ PASS"
+            if result["passed"]
+            else "❌ FAIL"
+        )
+
+        expected = (
+            f"{result['expected_case']} / "
+            f"{result['expected_action']}"
+        )
+
+        actual = (
+            f"{result['actual_case']} / "
+            f"{result['actual_action']}"
+        )
+
+        lines.append(
+            f"| {result['id']} "
+            f"| {result['layer']} "
+            f"| {result['source']} "
+            f"| {expected} "
+            f"| {actual} "
+            f"| {status} "
+            f"| {result['latency_ms']:.2f} ms |"
+        )
+
+    failures = [
+        result
+        for result in results
+        if not result["passed"]
+    ]
+
+    lines.extend([
+        "",
+        "## Failed Cases",
+        "",
+    ])
+
+    if not failures:
+
+        lines.append(
+            "No failed cases in this run."
+        )
+
+    else:
+        for result in failures:
+
+            lines.extend([
+                f"### {result['id']}",
+                "",
+                (
+                    "- Expected: "
+                    f"`{result['expected_case']} / "
+                    f"{result['expected_action']}`"
+                ),
+                (
+                    "- Actual: "
+                    f"`{result['actual_case']} / "
+                    f"{result['actual_action']}`"
+                ),
+            ])
+
+            if result["error"]:
+                lines.append(
+                    f"- Error: `{result['error']}`"
+                )
+            else:
+                lines.append(
+                    "- Model reply: "
+                    f"{result['reply_text']}"
+                )
+
+            lines.extend([
+                "- Failure analysis: "
+                "_To be reviewed by the team._",
+                "",
+            ])
+
+    RESULTS_PATH.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    RESULTS_PATH.write_text(
+        "\n".join(lines),
+        encoding="utf-8",
+    )
+
+
+# =========================================================
+# Main
+# =========================================================
+
+def main():
+
+    cases = load_golden_set()
+
+    print("=" * 80)
+    print(
+        "🚀 BẮT ĐẦU GOLDEN SET EVALUATION "
+        f"({len(cases)} CASES)"
+    )
+    print("=" * 80)
+
+    results = []
+
+    for index, case in enumerate(
+        cases,
+        start=1,
+    ):
+
+        result = run_case(case)
+
+        results.append(result)
+
+        status = (
+            "✅ PASS"
+            if result["passed"]
+            else "❌ FAIL"
+        )
+
+        print(
+            f"[{index:02d}/{len(cases)}] "
+            f"{status} | "
+            f"{case['id']} | "
+            f"{result['expected_case']} "
+            f"→ {result['actual_case']} | "
+            f"{result['latency_ms']} ms"
+        )
+
+    write_report(results)
+
+    total = len(results)
+
+    passed = sum(
+        1
+        for result in results
+        if result["passed"]
+    )
+
+    failed = total - passed
+
+    pass_rate = (
+        passed / total * 100
+        if total
+        else 0
+    )
+
+    print("=" * 80)
+    print("📊 KẾT QUẢ")
+    print(f"Total : {total}")
+    print(f"Passed: {passed}")
+    print(f"Failed: {failed}")
+    print(
+        f"Pass rate: {pass_rate:.1f}%"
+    )
+    print(
+        f"Report: {RESULTS_PATH}"
+    )
+    print("=" * 80)
+
+
+if __name__ == "__main__":
     main()
