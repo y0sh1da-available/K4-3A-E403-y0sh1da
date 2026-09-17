@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Grounded Tutor - playground kiểm thử AI" />
+    <title>Grounded Tutor · AI Playground</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">G</div>
+          <div>
+            <strong>Grounded Tutor</strong>
+            <span>AI playground</span>
+          </div>
+        </div>
+
+        <div class="sidebar-section">
+          <p class="eyebrow">Workspace</p>
+          <button class="nav-item active" type="button">
+            <span class="nav-icon">✦</span>
+            Hỏi đáp bài giảng
+          </button>
+          <button class="nav-item" id="clear-chat" type="button">
+            <span class="nav-icon">↺</span>
+            Phiên mới
+          </button>
+        </div>
+
+        <div class="sidebar-footer">
+          <div class="connection-card">
+            <div class="connection-heading">
+              <span class="status-dot" id="status-dot"></span>
+              <span id="status-label">Đang kiểm tra...</span>
+            </div>
+            <span class="connection-url" id="sidebar-endpoint">localhost:8001</span>
+          </div>
+          <p class="sidebar-note">Kết nối trực tiếp tới backend để kiểm thử response và citation.</p>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Evaluation workspace</p>
+            <h1>Kiểm thử trợ giảng AI</h1>
+          </div>
+          <div class="topbar-actions">
+            <span class="api-pill"><span class="status-dot" id="top-status-dot"></span><span id="top-status-label">Backend</span></span>
+            <button class="icon-button" id="refresh-health" type="button" title="Kiểm tra lại backend">↻</button>
+          </div>
+        </header>
+
+        <div class="workspace-grid">
+          <section class="chat-panel panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Live session</p>
+                <h2>Hỏi đáp theo ngữ cảnh</h2>
+              </div>
+              <span class="session-tag">SESSION 01</span>
+            </div>
+
+            <div class="messages" id="messages" aria-live="polite">
+              <div class="welcome-card" id="welcome-card">
+                <div class="welcome-icon">✦</div>
+                <h3>Sẵn sàng kiểm thử</h3>
+                <p>Nhập câu hỏi về nội dung slide. Mình sẽ gửi request tới backend và hiển thị rõ nguồn dẫn, case cùng hướng xử lý.</p>
+                <div class="quick-prompts">
+                  <button type="button" data-prompt="Data Lake là gì?">Data Lake là gì?</button>
+                  <button type="button" data-prompt="Cái này là gì?">Cần hỏi lại</button>
+                  <button type="button" data-prompt="Deadline bài tập tuần này?">Ngoài phạm vi</button>
+                </div>
+              </div>
+            </div>
+
+            <form class="composer" id="chat-form">
+              <label class="sr-only" for="question">Câu hỏi của bạn</label>
+              <textarea id="question" rows="2" placeholder="Hỏi điều gì đó về slide..." required></textarea>
+              <div class="composer-footer">
+                <span class="shortcut-hint">Enter để gửi · Shift + Enter xuống dòng</span>
+                <button class="send-button" id="send-button" type="submit">
+                  Gửi câu hỏi <span>→</span>
+                </button>
+              </div>
+            </form>
+          </section>
+
+          <aside class="context-panel">
+            <div class="panel context-card">
+              <div class="panel-header compact">
+                <div>
+                  <p class="eyebrow">Request context</p>
+                  <h2>Ngữ cảnh bài giảng</h2>
+                </div>
+                <span class="context-icon">⌘</span>
+              </div>
+              <div class="field">
+                <label for="slide-page">Số slide</label>
+                <input id="slide-page" type="number" min="1" value="12" />
+              </div>
+              <div class="field">
+                <label for="slide-context">Nội dung slide</label>
+                <textarea id="slide-context" rows="9">Data Lake là kho lưu trữ dữ liệu tập trung, quy mô lớn, cho phép lưu dữ liệu thô ở nhiều định dạng để phân tích về sau.</textarea>
+              </div>
+              <p class="field-hint">Context này được gửi kèm mỗi request <code>POST /api/chat</code>.</p>
+            </div>
+
+            <div class="panel endpoint-card">
+              <div class="panel-header compact">
+                <div>
+                  <p class="eyebrow">Connection</p>
+                  <h2>Backend endpoint</h2>
+                </div>
+                <span class="connection-check" id="connection-check">●</span>
+              </div>
+              <label class="sr-only" for="api-url">Backend URL</label>
+              <input id="api-url" type="url" value="http://localhost:8001" spellcheck="false" />
+              <p class="field-hint">Đổi URL nếu backend chạy ở host khác.</p>
+            </div>
+
+            <div class="panel legend-card">
+              <p class="eyebrow">Response map</p>
+              <div class="legend-row"><span class="case-badge case-a">A</span><span>Trả lời có citation</span></div>
+              <div class="legend-row"><span class="case-badge case-b">B</span><span>Hỏi lại để làm rõ</span></div>
+              <div class="legend-row"><span class="case-badge case-c">C</span><span>Từ chối & hướng dẫn</span></div>
+            </div>
+          </aside>
+        </div>
+      </main>
+    </div>
+    <script src="app.js"></script>
+  </body>
+</html>
