@@ -6,12 +6,16 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+OPENAI_MODEL = os.getenv(
+    "OPENAI_MODEL",
+    "gpt-5-nano",
+)
 
 
-if not GEMINI_API_KEY:
+if not OPENAI_API_KEY:
     raise RuntimeError(
-        "GEMINI_API_KEY is missing. "
-        "Create a .env file and add GEMINI_API_KEY."
+        "OPENAI_API_KEY is missing. "
+        "Please add it to backend/.env"
     )
