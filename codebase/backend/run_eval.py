@@ -1,17 +1,31 @@
 import json
 import time
 from pathlib import Path
-
-from app.schemas import ChatRequest
-from app.services.tutor_service import handle_chat
+import sys
 
 
 # =========================================================
 # Paths
 # =========================================================
 
-BACKEND_ROOT = Path(__file__).resolve().parent
-REPO_ROOT = BACKEND_ROOT.parents[1]
+BACKEND_DIR = Path(__file__).resolve().parent
+
+# repo/
+# ├── codebase/
+# │   └── backend/
+# │       └── run_eval.py
+# └── eval/
+REPO_ROOT = BACKEND_DIR.parents[1]
+
+sys.path.insert(
+    0,
+    str(BACKEND_DIR),
+)
+
+
+from app.schemas import ChatRequest
+from app.services.tutor_service import handle_chat
+
 
 GOLDEN_SET_PATH = (
     REPO_ROOT
@@ -34,155 +48,150 @@ def load_golden_set() -> list[dict]:
 
     if not GOLDEN_SET_PATH.exists():
         raise FileNotFoundError(
-            f"Golden set not found: {GOLDEN_SET_PATH}"
+            f"Không tìm thấy Golden Set: "
+            f"{GOLDEN_SET_PATH}"
         )
 
     with GOLDEN_SET_PATH.open(
         "r",
         encoding="utf-8",
     ) as file:
-        data = json.load(file)
+        cases = json.load(file)
 
-    if not isinstance(data, list):
+    if not isinstance(cases, list):
         raise ValueError(
-            "golden_set.json must contain a JSON array."
+            "golden_set.json phải là một JSON array."
         )
 
-    return data
+    return cases
 
 
 # =========================================================
-# Run one test case
+# Run One Case
 # =========================================================
 
-def run_case(test_case: dict) -> dict:
+def run_case(
+    case: dict,
+) -> dict:
 
     request = ChatRequest(
-        user_input=test_case["user_input"],
-        slide_context=test_case["slide_context"],
-        slide_page=test_case.get(
-            "slide_page",
-            1,
-        ),
+        user_input=case["user_input"],
+        slide_context=case["slide_context"],
+        slide_page=case["slide_page"],
     )
 
-    expected_case = test_case[
-        "expected_case"
-    ]
-
-    expected_action = test_case.get(
-        "expected_action"
-    )
-
-    start_time = time.perf_counter()
+    start_t = time.perf_counter()
 
     try:
         response = handle_chat(request)
 
-        elapsed_ms = (
-            time.perf_counter() - start_time
-        ) * 1000
-
-        case_pass = (
-            response.case
-            == expected_case
+        latency_ms = round(
+            (
+                time.perf_counter()
+                - start_t
+            )
+            * 1000,
+            2,
         )
 
-        action_pass = (
-            expected_action is None
-            or response.action
-            == expected_action
+        case_match = (
+            response.case
+            == case["expected_case"]
+        )
+
+        action_match = (
+            response.action
+            == case["expected_action"]
         )
 
         passed = (
-            case_pass
-            and action_pass
+            case_match
+            and action_match
         )
 
         return {
-            "id": test_case["id"],
-            "taxonomy": test_case.get(
-                "taxonomy",
-                test_case.get(
-                    "layer",
+            "id": case["id"],
+            "layer": case.get(
+                "layer",
+                case.get(
+                    "taxonomy",
                     "UNKNOWN",
                 ),
             ),
-            "source": test_case.get(
+            "source": case.get(
                 "source",
                 "UNKNOWN",
             ),
             "expected_case": (
-                expected_case
+                case["expected_case"]
             ),
-            "actual_case": (
-                response.case
-            ),
+            "actual_case": response.case,
             "expected_action": (
-                expected_action
+                case["expected_action"]
             ),
-            "actual_action": (
-                response.action
-            ),
+            "actual_action": response.action,
+            "reply_text": response.reply_text,
+            "latency_ms": latency_ms,
             "passed": passed,
-            "latency_ms": round(
-                elapsed_ms,
-                2,
-            ),
             "error": None,
         }
 
     except Exception as exc:
 
-        elapsed_ms = (
-            time.perf_counter() - start_time
-        ) * 1000
+        latency_ms = round(
+            (
+                time.perf_counter()
+                - start_t
+            )
+            * 1000,
+            2,
+        )
 
         return {
-            "id": test_case["id"],
-            "taxonomy": test_case.get(
-                "taxonomy",
-                test_case.get(
-                    "layer",
+            "id": case["id"],
+            "layer": case.get(
+                "layer",
+                case.get(
+                    "taxonomy",
                     "UNKNOWN",
                 ),
             ),
-            "source": test_case.get(
+            "source": case.get(
                 "source",
                 "UNKNOWN",
             ),
             "expected_case": (
-                expected_case
+                case["expected_case"]
             ),
             "actual_case": "ERROR",
             "expected_action": (
-                expected_action
+                case["expected_action"]
             ),
             "actual_action": None,
+            "reply_text": "",
+            "latency_ms": latency_ms,
             "passed": False,
-            "latency_ms": round(
-                elapsed_ms,
-                2,
-            ),
             "error": (
-                f"{type(exc).__name__}: {exc}"
+                f"{type(exc).__name__}: "
+                f"{exc}"
             ),
         }
 
 
 # =========================================================
-# Markdown report
+# Generate Markdown Report
 # =========================================================
 
-def write_results(
+def write_report(
     results: list[dict],
 ) -> None:
 
     total = len(results)
 
     passed = sum(
-        result["passed"]
+        1
         for result in results
+        if result["passed"]
     )
 
     failed = total - passed
@@ -195,8 +204,8 @@ def write_results(
 
     avg_latency = (
         sum(
-            r["latency_ms"]
-            for r in results
+            result["latency_ms"]
+            for result in results
         )
         / total
         if total
@@ -211,41 +220,49 @@ def write_results(
         f"- Total cases: **{total}**",
         f"- Passed: **{passed}**",
         f"- Failed: **{failed}**",
+        f"- Pass rate: **{pass_rate:.1f}%**",
         (
-            f"- Pass rate: "
-            f"**{pass_rate:.2f}%**"
-        ),
-        (
-            f"- Average latency: "
+            "- Average end-to-end latency: "
             f"**{avg_latency:.2f} ms**"
         ),
         "",
         "## Detailed Results",
         "",
         (
-            "| ID | Taxonomy | Expected | "
-            "Actual | Pass | Latency (ms) |"
+            "| ID | Layer | Source | Expected | "
+            "Actual | Result | Latency |"
         ),
         (
-            "|---|---|---|---|---|---:|"
+            "|---|---|---|---|---|---|---:|"
         ),
     ]
 
     for result in results:
 
-        mark = (
-            "✅"
+        status = (
+            "✅ PASS"
             if result["passed"]
-            else "❌"
+            else "❌ FAIL"
+        )
+
+        expected = (
+            f"{result['expected_case']} / "
+            f"{result['expected_action']}"
+        )
+
+        actual = (
+            f"{result['actual_case']} / "
+            f"{result['actual_action']}"
         )
 
         lines.append(
             f"| {result['id']} "
-            f"| {result['taxonomy']} "
-            f"| {result['expected_case']} "
-            f"| {result['actual_case']} "
-            f"| {mark} "
-            f"| {result['latency_ms']} |"
+            f"| {result['layer']} "
+            f"| {result['source']} "
+            f"| {expected} "
+            f"| {actual} "
+            f"| {status} "
+            f"| {result['latency_ms']:.2f} ms |"
         )
 
     failures = [
@@ -254,39 +271,51 @@ def write_results(
         if not result["passed"]
     ]
 
-    if failures:
+    lines.extend([
+        "",
+        "## Failed Cases",
+        "",
+    ])
 
-        lines.extend([
-            "",
-            "## Failed Cases",
-            "",
-        ])
+    if not failures:
 
+        lines.append(
+            "No failed cases in this run."
+        )
+
+    else:
         for result in failures:
 
-            lines.append(
-                f"### {result['id']}"
-            )
-
-            lines.append("")
-
-            lines.append(
-                f"- Expected case: "
-                f"`{result['expected_case']}`"
-            )
-
-            lines.append(
-                f"- Actual case: "
-                f"`{result['actual_case']}`"
-            )
+            lines.extend([
+                f"### {result['id']}",
+                "",
+                (
+                    "- Expected: "
+                    f"`{result['expected_case']} / "
+                    f"{result['expected_action']}`"
+                ),
+                (
+                    "- Actual: "
+                    f"`{result['actual_case']} / "
+                    f"{result['actual_action']}`"
+                ),
+            ])
 
             if result["error"]:
                 lines.append(
-                    f"- Error: "
-                    f"`{result['error']}`"
+                    f"- Error: `{result['error']}`"
+                )
+            else:
+                lines.append(
+                    "- Model reply: "
+                    f"{result['reply_text']}"
                 )
 
-            lines.append("")
+            lines.extend([
+                "- Failure analysis: "
+                "_To be reviewed by the team._",
+                "",
+            ])
 
     RESULTS_PATH.parent.mkdir(
         parents=True,
@@ -305,76 +334,71 @@ def write_results(
 
 def main():
 
-    golden_set = load_golden_set()
+    cases = load_golden_set()
 
+    print("=" * 80)
     print(
-        f"Running {len(golden_set)} "
-        f"Golden Set cases...\n"
+        "🚀 BẮT ĐẦU GOLDEN SET EVALUATION "
+        f"({len(cases)} CASES)"
     )
+    print("=" * 80)
 
     results = []
 
-    for index, test_case in enumerate(
-        golden_set,
+    for index, case in enumerate(
+        cases,
         start=1,
     ):
 
-        case_id = test_case["id"]
-
-        print(
-            f"[{index}/{len(golden_set)}] "
-            f"{case_id}...",
-            end=" ",
-            flush=True,
-        )
-
-        result = run_case(
-            test_case
-        )
+        result = run_case(case)
 
         results.append(result)
 
-        if result["passed"]:
-            print(
-                f"PASS "
-                f"({result['actual_case']})"
-            )
-        else:
-            print(
-                f"FAIL "
-                f"(expected "
-                f"{result['expected_case']}, "
-                f"got "
-                f"{result['actual_case']})"
-            )
+        status = (
+            "✅ PASS"
+            if result["passed"]
+            else "❌ FAIL"
+        )
 
-    write_results(results)
+        print(
+            f"[{index:02d}/{len(cases)}] "
+            f"{status} | "
+            f"{case['id']} | "
+            f"{result['expected_case']} "
+            f"→ {result['actual_case']} | "
+            f"{result['latency_ms']} ms"
+        )
 
-    passed = sum(
-        r["passed"]
-        for r in results
-    )
+    write_report(results)
 
     total = len(results)
 
-    print("\n====================")
-    print("Evaluation completed")
-    print("====================")
-
-    print(
-        f"Passed: {passed}/{total}"
+    passed = sum(
+        1
+        for result in results
+        if result["passed"]
     )
 
-    print(
-        f"Pass rate: "
-        f"{passed / total * 100:.2f}%"
+    failed = total - passed
+
+    pass_rate = (
+        passed / total * 100
         if total
-        else "Pass rate: N/A"
+        else 0
     )
 
+    print("=" * 80)
+    print("📊 KẾT QUẢ")
+    print(f"Total : {total}")
+    print(f"Passed: {passed}")
+    print(f"Failed: {failed}")
+    print(
+        f"Pass rate: {pass_rate:.1f}%"
+    )
     print(
         f"Report: {RESULTS_PATH}"
     )
+    print("=" * 80)
 
 
 if __name__ == "__main__":
