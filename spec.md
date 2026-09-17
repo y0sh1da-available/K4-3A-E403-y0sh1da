@@ -159,8 +159,8 @@ Bộ 20 kịch bản kiểm thử được lưu trữ đầy đủ trong file [`
   - **Trần Đức Lộc**: Thiết kế và lập trình giao diện Web Playground (HTML/CSS/JS), hoàn thiện các trạng thái hiển thị phản hồi Case A/B/C và chuẩn bị video demo.
 
 - **Willing Users tham gia kiểm thử người dùng (Validation vòng trong):**
-  1. *Nguyễn Văn An* (Sinh viên năm 2 - Đóng vai người học hỏi bài giảng trực tiếp).
-  2. *Lê Thu Trang* (Sinh viên năm 2 - Đóng vai người học cố tình hỏi bẫy/ngoài phạm vi slide).
+  1. *Thân Tiến Đạt* (MSSV: `2A202603023` - Đóng vai người học hỏi bài giảng trực tiếp, kiểm thử Case A).
+  2. *Vũ Gia Khải* (MSSV: `2A202602786` - Đóng vai người học đưa câu hỏi bẫy, mơ hồ và ngoài phạm vi slide, kiểm thử Case B và Case C).
 
 ---
 
