@@ -2,23 +2,175 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Demo Slides - Grounded Tutor (Nhóm y0sh1da)</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
   
+  :root {
+    --bg-primary: #0f172a;
+    --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    --card-bg: rgba(30, 41, 59, 0.7);
+    --card-border: rgba(255, 255, 255, 0.08);
+    --card-hl-bg: rgba(99, 102, 241, 0.08);
+    --card-hl-border: rgba(99, 102, 241, 0.4);
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --text-secondary: #cbd5e1;
+    --accent: #818cf8;
+    --accent-glow: rgba(99, 102, 241, 0.15);
+    --stat-color: #38bdf8;
+    --header-border: rgba(255, 255, 255, 0.1);
+  }
+
+  body.light-mode {
+    --bg-primary: #f8fafc;
+    --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    --card-bg: rgba(255, 255, 255, 0.9);
+    --card-border: rgba(203, 213, 225, 0.8);
+    --card-hl-bg: rgba(238, 242, 255, 0.95);
+    --card-hl-border: rgba(99, 102, 241, 0.6);
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --text-secondary: #334155;
+    --accent: #4f46e5;
+    --accent-glow: rgba(79, 70, 229, 0.1);
+    --stat-color: #0284c7;
+    --header-border: rgba(203, 213, 225, 0.8);
+  }
+
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Inter', sans-serif; background: #0f172a; color: #f8fafc; }
   
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Inter', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-main);
+    transition: background 0.3s ease, color 0.3s ease;
+  }
+
+  /* Top Toolbar */
+  .top-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 48px;
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    z-index: 1000;
+  }
+  body.light-mode .top-bar {
+    background: rgba(255, 255, 255, 0.9);
+    border-bottom: 1px solid rgba(203, 213, 225, 0.8);
+  }
+
+  .top-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+  .top-brand .badge {
+    background: #4f46e5;
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+
+  .top-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .btn-action {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: var(--text-secondary);
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+  }
+  body.light-mode .btn-action {
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    color: #334155;
+  }
+  .btn-action:hover {
+    background: rgba(99, 102, 241, 0.2);
+    border-color: rgba(99, 102, 241, 0.5);
+    color: #fff;
+  }
+  body.light-mode .btn-action:hover {
+    background: #e0e7ff;
+    color: #4338ca;
+  }
+  .btn-action.btn-primary {
+    background: #4f46e5;
+    border-color: #6366f1;
+    color: #fff;
+  }
+  .btn-action.btn-primary:hover {
+    background: #4338ca;
+  }
+
+  /* Progress Bar */
+  .progress-line {
+    position: fixed;
+    top: 48px;
+    left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #6366f1, #38bdf8);
+    width: 16.66%;
+    z-index: 1001;
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Carousel Deck Viewport */
+  .deck-viewport {
+    width: 100vw;
+    height: calc(100vh - 48px);
+    margin-top: 48px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .slides-track {
+    display: flex;
+    width: 600vw;
+    height: 100%;
+    transition: transform 0.45s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+
+  /* Slide Item */
   .slide {
     width: 100vw;
-    height: 100vh;
-    padding: 60px 80px;
+    height: 100%;
+    flex-shrink: 0;
+    padding: 35px 70px 65px 70px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-    border-bottom: 2px solid #334155;
-    page-break-after: always;
+    background: var(--bg-gradient);
     position: relative;
     overflow: hidden;
   }
@@ -26,322 +178,696 @@
   .slide::before {
     content: "";
     position: absolute;
-    top: -100px;
-    right: -100px;
-    width: 400px;
-    height: 400px;
-    background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(0,0,0,0) 70%);
+    top: -120px;
+    right: -120px;
+    width: 450px;
+    height: 450px;
+    background: radial-gradient(circle, var(--accent-glow) 0%, rgba(0,0,0,0) 70%);
     border-radius: 50%;
     pointer-events: none;
   }
 
+  /* Header */
   .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    padding-bottom: 15px;
+    border-bottom: 1px solid var(--header-border);
+    padding-bottom: 12px;
   }
   .tag {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1.5px;
-    color: #818cf8;
+    color: var(--accent);
     background: rgba(99, 102, 241, 0.1);
-    padding: 6px 14px;
+    padding: 5px 12px;
     border-radius: 20px;
     border: 1px solid rgba(99, 102, 241, 0.3);
   }
-  .slide-num { font-size: 14px; color: #94a3b8; font-weight: 600; }
+  .slide-num { font-size: 14px; color: var(--text-muted); font-weight: 700; }
 
-  .content { flex: 1; display: flex; flex-direction: column; justify-content: center; margin: 25px 0; }
-  h1 { font-size: 38px; font-weight: 800; color: #ffffff; line-height: 1.2; margin-bottom: 20px; }
-  h2 { font-size: 24px; font-weight: 700; color: #cbd5e1; margin-bottom: 16px; }
+  /* Slide Content */
+  .content { flex: 1; display: flex; flex-direction: column; justify-content: center; margin: 20px 0; }
+  h1 { font-size: 34px; font-weight: 800; color: var(--text-main); line-height: 1.2; margin-bottom: 16px; }
+  h2 { font-size: 21px; font-weight: 700; color: var(--text-secondary); margin-bottom: 14px; }
   
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
-  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
   
   .card {
-    background: rgba(30, 41, 59, 0.7);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 16px;
-    padding: 24px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 20px;
     backdrop-filter: blur(10px);
   }
   .card-highlight {
-    background: rgba(99, 102, 241, 0.08);
-    border: 1px solid rgba(99, 102, 241, 0.4);
+    background: var(--card-hl-bg);
+    border: 1px solid var(--card-hl-border);
   }
 
-  .stat { font-size: 44px; font-weight: 800; color: #38bdf8; margin-bottom: 5px; }
-  .stat-sub { font-size: 14px; color: #94a3b8; line-height: 1.4; }
+  .stat { font-size: 40px; font-weight: 800; color: var(--stat-color); margin-bottom: 4px; }
+  .stat-sub { font-size: 13px; color: var(--text-muted); line-height: 1.4; }
 
-  .badge-a { background: #065f46; color: #34d399; padding: 4px 10px; border-radius: 6px; font-weight: 700; }
-  .badge-b { background: #854d0e; color: #facc15; padding: 4px 10px; border-radius: 6px; font-weight: 700; }
-  .badge-c { background: #991b1b; color: #f87171; padding: 4px 10px; border-radius: 6px; font-weight: 700; }
+  .badge-a { background: #065f46; color: #34d399; padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 13px; }
+  .badge-b { background: #854d0e; color: #facc15; padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 13px; }
+  .badge-c { background: #991b1b; color: #f87171; padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 13px; }
 
   ul { list-style: none; }
-  li { margin-bottom: 12px; font-size: 16px; color: #cbd5e1; line-height: 1.5; display: flex; align-items: flex-start; }
-  li::before { content: "✦"; color: #818cf8; margin-right: 10px; font-size: 14px; }
+  li { margin-bottom: 10px; font-size: 15px; color: var(--text-secondary); line-height: 1.45; display: flex; align-items: flex-start; }
+  li::before { content: "✦"; color: var(--accent); margin-right: 8px; font-size: 13px; flex-shrink: 0; }
 
+  /* Footer */
   .footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-top: 1px solid rgba(255,255,255,0.1);
-    padding-top: 15px;
-    font-size: 13px;
-    color: #64748b;
+    border-top: 1px solid var(--header-border);
+    padding-top: 12px;
+    font-size: 12px;
+    color: var(--text-muted);
   }
-  .presenter { color: #cbd5e1; font-weight: 600; }
+  .presenter { color: var(--text-secondary); font-weight: 600; }
 
+  /* Floating Navigation Arrows */
+  .nav-btn {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #f8fafc;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    z-index: 900;
+    transition: all 0.2s ease;
+    user-select: none;
+  }
+  body.light-mode .nav-btn {
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(203, 213, 225, 0.9);
+    color: #0f172a;
+  }
+  .nav-btn:hover:not(:disabled) {
+    background: #4f46e5;
+    border-color: #6366f1;
+    color: #fff;
+    transform: translateY(-50%) scale(1.08);
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+  }
+  .nav-btn:disabled {
+    opacity: 0.25;
+    cursor: not-allowed;
+  }
+  .prev-btn { left: 16px; }
+  .next-btn { right: 16px; }
+
+  /* Bottom Controls */
+  .bottom-bar {
+    position: fixed;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px);
+    padding: 6px 18px;
+    border-radius: 30px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    z-index: 1000;
+  }
+  body.light-mode .bottom-bar {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(203, 213, 225, 0.8);
+  }
+
+  .dots-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.25);
+    border: none;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+  body.light-mode .dot {
+    background: rgba(100, 116, 139, 0.35);
+  }
+  .dot.active {
+    width: 28px;
+    border-radius: 10px;
+    background: #6366f1;
+  }
+
+  .slide-indicator {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+  }
+
+  /* PRINT STYLESHEET (PDF Export) */
   @media print {
-    body { background: #ffffff; color: #000000; }
-    .slide {
-      width: 100%;
-      height: 100vh;
-      border-bottom: none;
+    @page {
+      size: landscape;
+      margin: 0;
+    }
+    
+    html, body {
+      width: 100% !important;
+      height: auto !important;
+      overflow: visible !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      background: #0f172a !important;
+      color: #f8fafc !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    body.light-mode {
       background: #ffffff !important;
       color: #0f172a !important;
-      padding: 40px 60px;
     }
-    .slide::before { display: none; }
-    h1 { color: #0f172a !important; }
-    h2 { color: #334155 !important; }
-    .card { background: #f8fafc !important; border: 1px solid #cbd5e1 !important; }
-    .card-highlight { background: #e0e7ff !important; border: 1px solid #6366f1 !important; }
-    .stat { color: #2563eb !important; }
-    .stat-sub { color: #475569 !important; }
-    li { color: #1e293b !important; }
-    .header, .footer { border-color: #cbd5e1 !important; color: #64748b !important; }
-    .tag { background: #e0e7ff !important; color: #4338ca !important; border-color: #a5b4fc !important; }
-    @page { size: landscape; margin: 0; }
+
+    .top-bar, .progress-line, .nav-btn, .bottom-bar {
+      display: none !important;
+    }
+
+    .deck-viewport {
+      width: 100% !important;
+      height: auto !important;
+      margin-top: 0 !important;
+      overflow: visible !important;
+      position: static !important;
+    }
+
+    .slides-track {
+      display: block !important;
+      width: 100% !important;
+      height: auto !important;
+      transform: none !important;
+      transition: none !important;
+    }
+
+    .slide {
+      width: 100vw !important;
+      height: 100vh !important;
+      min-height: 100vh !important;
+      max-height: 100vh !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: space-between !important;
+      padding: 40px 60px !important;
+      box-sizing: border-box !important;
+      page-break-after: always !important;
+      break-after: page !important;
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+      overflow: hidden !important;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+      color: #f8fafc !important;
+      border: none !important;
+    }
+
+    body.light-mode .slide {
+      background: #ffffff !important;
+      color: #0f172a !important;
+    }
+
+    .slide::before {
+      display: none !important;
+    }
+
+    .card {
+      background: rgba(30, 41, 59, 0.85) !important;
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    }
+
+    body.light-mode .card {
+      background: #f8fafc !important;
+      border: 1px solid #cbd5e1 !important;
+    }
+
+    .card-highlight {
+      background: rgba(99, 102, 241, 0.15) !important;
+      border: 1px solid rgba(99, 102, 241, 0.5) !important;
+    }
+
+    body.light-mode .card-highlight {
+      background: #e0e7ff !important;
+      border: 1px solid #6366f1 !important;
+    }
   }
 </style>
 </head>
 <body>
 
-<!-- SLIDE 1 -->
-<section class="slide">
-  <div class="header">
-    <span class="tag">SLIDE 1 · USER & NỖI ĐAU THỰC TẾ</span>
-    <span class="slide-num">01 / 06</span>
+<!-- TOP TOOLBAR -->
+<header class="top-bar">
+  <div class="top-brand">
+    <span class="badge">CP5 / CP6</span>
+    <span>Grounded Tutor · Pitch Deck (6 Slides)</span>
+    <span style="color: var(--text-muted); font-weight: normal;">| Nhóm y0sh1da (Lớp 3A)</span>
   </div>
-  <div class="content">
-    <h1>Grounded Tutor — Trợ Giảng AI "Biết-Mình-Không-Biết"</h1>
-    <p style="font-size: 20px; color: #94a3b8; margin-bottom: 25px;">Chấm dứt tình trạng AI bịa đặt kiến thức và trích dẫn sai trong học tập</p>
-    <div class="grid-2">
-      <div class="card card-highlight">
-        <h2>Job Executor & Core JTBD</h2>
-        <ul>
-          <li><strong>Người dùng:</strong> Sinh viên VLearn tự học qua tài liệu slide bài giảng kỹ thuật.</li>
-          <li><strong>Core JTBD:</strong> <em>"Hiểu đúng và nhanh chóng các khái niệm kỹ thuật trong bài giảng mà không bị hiểu sai kiến thức học thuật."</em></li>
-          <li><strong>Bối cảnh:</strong> Gặp khái niệm khó, hỏi bot AI chung chung thì bị trả lời sai hoặc chém gió lan man ngoài bài giảng.</li>
-        </ul>
-      </div>
-      <div class="card">
-        <h2>Con số nỗi đau thực tế (Mining chatlog K4)</h2>
-        <div class="stat">84%</div>
-        <div class="stat-sub">Số lượt trao đổi của học viên gặp tình trạng AI trả lời không có căn cứ hoặc trả lời mơ hồ khi thiếu cơ chế grounding.</div>
-        <div style="margin-top: 15px; font-size: 13px; color: #94a3b8;">
-          <strong>Minh chứng Turn ID thật:</strong> T10293 (bịa so sánh), T10316 (đoán mò câu hỏi cụt), T10303 (bịa hạn nộp bài).
-        </div>
-      </div>
-    </div>
+  <div class="top-actions">
+    <span style="font-size: 11px; color: var(--text-muted); margin-right: 6px;">Phím ◄ ► / Space để chuyển slide</span>
+    <button class="btn-action" id="themeBtn" title="Chuyển đổi giao diện Tối / Sáng">
+      🎨 <span id="themeLabel">Nền sáng</span>
+    </button>
+    <button class="btn-action" id="fullscreenBtn" title="Toàn màn hình (F)">
+      ⛶ Toàn màn hình
+    </button>
+    <button class="btn-action btn-primary" id="printBtn" title="Lưu thành file demo-slides.pdf">
+      🖨️ Xuất PDF (Ctrl + P)
+    </button>
   </div>
-  <div class="footer">
-    <span>Hackathon AI K4 · Lớp 3A · Room E403</span>
-    <span class="presenter">Trình bày: Đặng Hữu Cương (45s)</span>
-  </div>
-</section>
+</header>
 
-<!-- SLIDE 2 -->
-<section class="slide">
-  <div class="header">
-    <span class="tag">SLIDE 2 · BÀI TOÁN & QUYẾT ĐỊNH CHỌN</span>
-    <span class="slide-num">02 / 06</span>
-  </div>
-  <div class="content">
-    <h1>Tại sao chọn Grounded Tutor? — Bài toán có Cost of Error cao nhất</h1>
-    <div class="grid-3" style="margin-top: 10px;">
-      <div class="card card-highlight">
-        <h2 style="color: #38bdf8;">A1. Grounded Tutor [CHỌN]</h2>
-        <ul>
-          <li><strong>Tần suất:</strong> Rất cao (5-10 lần/buổi học).</li>
-          <li><strong>Cost of Error:</strong> CỰC CAO (Hiểu sai định nghĩa cốt lõi, trượt môn, hỏng đồ án).</li>
-          <li><strong>Giá trị:</strong> Bảo vệ tính chuẩn xác học thuật 100%.</li>
-        </ul>
-      </div>
-      <div class="card">
-        <h2>A2. Quiz Generator [LOẠI]</h2>
-        <ul>
-          <li><strong>Tần suất:</strong> Thấp (chỉ dùng ôn thi cuối kỳ).</li>
-          <li><strong>Cost of Error:</strong> Thấp (câu hỏi trắc nghiệm dở thì sinh viên bỏ qua).</li>
-          <li><strong>Lý do loại:</strong> Không giải quyết nỗi đau cấp bách lúc đang học.</li>
-        </ul>
-      </div>
-      <div class="card">
-        <h2>A3. Auto-Summarizer [LOẠI]</h2>
-        <ul>
-          <li><strong>Tần suất:</strong> Trung bình (1 lần/chương).</li>
-          <li><strong>Cost of Error:</strong> Thấp (thiếu ý thì đọc lại slide).</li>
-          <li><strong>Lý do loại:</strong> Tương tác một chiều thụ động, không giải quyết được chỗ vướng cụ thể.</li>
-        </ul>
-      </div>
-    </div>
-    <div class="card" style="margin-top: 20px; padding: 14px 24px;">
-      <p style="font-size: 15px; color: #cbd5e1;">
-        <strong>Khác biệt với Coursera Coach & Khanmigo:</strong> Coursera Coach hay trả lời lan man ngoài bài; Khanmigo hỏi gợi mở vòng vo khi chỉ cần tra cứu nhanh. Grounded Tutor: Đủ bằng chứng thì trích dẫn ngay; câu hỏi mơ hồ thì hỏi lại; ngoài bài thì kiên quyết từ chối.
-      </p>
-    </div>
-  </div>
-  <div class="footer">
-    <span>Nhóm y0sh1da · Track A1</span>
-    <span class="presenter">Trình bày: Đặng Hữu Cương (45s)</span>
-  </div>
-</section>
+<!-- PROGRESS LINE -->
+<div class="progress-line" id="progressLine"></div>
 
-<!-- SLIDE 3 -->
-<section class="slide">
-  <div class="header">
-    <span class="tag">SLIDE 3 · THIẾT KẾ GIẢI PHÁP & LIVE DEMO</span>
-    <span class="slide-num">03 / 06</span>
-  </div>
-  <div class="content">
-    <h1>Lát Cắt 3 Nhánh & Bộ Bảo Vệ Deterministic Guardrail</h1>
-    <div class="grid-2">
-      <div class="card">
-        <h2>Quy hoạch 3 nhánh phản hồi (HAX G2)</h2>
-        <ul>
-          <li><span class="badge-a">CASE A</span> <strong>Trả lời có trích dẫn:</strong> Đủ dữ liệu trong slide &rarr; Trích dẫn nguyên văn 100% câu gốc (HAX G10).</li>
-          <li><span class="badge-b">CASE B</span> <strong>Hỏi lại để làm rõ:</strong> Câu hỏi cụt ("cái này là gì") &rarr; Không đoán mò, hỏi lại cụ thể (HAX G11).</li>
-          <li><span class="badge-c">CASE C</span> <strong>Từ chối & hướng dẫn:</strong> Câu hỏi ngoài slide &rarr; Thẳng thắn từ chối và hướng dẫn kênh tra cứu.</li>
-        </ul>
-      </div>
-      <div class="card card-highlight">
-        <h2>Bộ Bảo Vệ Backend Guardrail (Kỹ thuật)</h2>
-        <ul>
-          <li><strong>Core Engine:</strong> OpenAI <code>gpt-5-nano</code> + Pydantic Structured Outputs.</li>
-          <li><strong>Deterministic Guardrail:</strong> Backend Python đối chiếu chuỗi <code>exact_quote in slide_context</code>.</li>
-          <li><strong>Cơ chế tự sửa (Retry loop):</strong> Nếu LLM bịa nguồn &rarr; Chặn lại và ép Re-evaluate lượt 2. Triệt tiêu 100% ảo giác!</li>
-          <li><strong>Trực tiếp Live Demo:</strong> Test Case A chuẩn + Test Case B chỗ khó.</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-  <div class="footer">
-    <span>Nhóm y0sh1da · Live Prototype</span>
-    <span class="presenter">Demo: Trần Đức Lộc · Giải thích kỹ thuật: Nguyễn Minh Đức (2 phút)</span>
-  </div>
-</section>
+<!-- FLOATING NAV BUTTONS -->
+<button class="nav-btn prev-btn" id="prevBtn" title="Slide trước (◄ hoặc PageUp)" aria-label="Previous Slide">&#10094;</button>
+<button class="nav-btn next-btn" id="nextBtn" title="Slide tiếp (► hoặc Space)" aria-label="Next Slide">&#10095;</button>
 
-<!-- SLIDE 4 -->
-<section class="slide">
-  <div class="header">
-    <span class="tag">SLIDE 4 · KẾT QUẢ ĐO KIỂM & QUALITY BAR</span>
-    <span class="slide-num">04 / 06</span>
+<!-- BOTTOM CONTROL BAR -->
+<div class="bottom-bar">
+  <div class="dots-container" id="dotsContainer">
+    <button class="dot active" data-slide="0" title="Slide 1: User & Nỗi đau"></button>
+    <button class="dot" data-slide="1" title="Slide 2: Bài toán & Lựa chọn"></button>
+    <button class="dot" data-slide="2" title="Slide 3: Thiết kế 3 nhánh"></button>
+    <button class="dot" data-slide="3" title="Slide 4: Đo kiểm & Quality Bar"></button>
+    <button class="dot" data-slide="4" title="Slide 5: Validation User Thật"></button>
+    <button class="dot" data-slide="5" title="Slide 6: Roadmap & Bài học"></button>
   </div>
-  <div class="content">
-    <h1>Kiểm Thử Định Lượng — Khóa Chuẩn Chất Lượng (Quality Bar)</h1>
-    <div class="grid-2">
-      <div class="card card-highlight">
-        <h2>Cam kết Quality Bar (Khóa tại CP4)</h2>
-        <p style="font-size: 18px; color: #38bdf8; font-weight: 700; margin-bottom: 15px;">
-          "Pass &ge; 85% trên Golden Set 20 case, và 0% bịa đặt trích dẫn (0 Citation Fabrication)"
-        </p>
-        <div style="display: flex; gap: 30px; margin-top: 20px;">
-          <div>
-            <div class="stat" style="color: #34d399;">95%</div>
-            <div class="stat-sub">Tỷ lệ Pass thực tế (19/20 case)</div>
+  <span class="slide-indicator" id="slideIndicator">01 / 06</span>
+</div>
+
+<!-- SLIDES VIEWPORT -->
+<main class="deck-viewport" id="deckViewport">
+  <div class="slides-track" id="slidesTrack">
+
+    <!-- SLIDE 1 -->
+    <section class="slide" id="slide-1">
+      <div class="header">
+        <span class="tag">SLIDE 1 · USER & NỖI ĐAU THỰC TẾ</span>
+        <span class="slide-num">01 / 06</span>
+      </div>
+      <div class="content">
+        <h1>Grounded Tutor — Trợ Giảng AI "Biết-Mình-Không-Biết"</h1>
+        <p style="font-size: 19px; color: var(--text-muted); margin-bottom: 22px;">Chấm dứt tình trạng AI bịa đặt kiến thức và trích dẫn sai trong học tập</p>
+        <div class="grid-2">
+          <div class="card card-highlight">
+            <h2>Job Executor & Core JTBD</h2>
+            <ul>
+              <li><strong>Người dùng:</strong> Sinh viên VLearn tự học qua tài liệu slide bài giảng kỹ thuật.</li>
+              <li><strong>Core JTBD:</strong> <em>"Hiểu đúng và nhanh chóng các khái niệm kỹ thuật trong bài giảng mà không bị hiểu sai kiến thức học thuật."</em></li>
+              <li><strong>Bối cảnh:</strong> Gặp khái niệm khó, hỏi bot AI chung chung thì bị trả lời sai hoặc chém gió lan man ngoài bài giảng.</li>
+            </ul>
           </div>
-          <div>
-            <div class="stat" style="color: #34d399;">0</div>
-            <div class="stat-sub">Lỗi ảo giác trích dẫn (0%)</div>
+          <div class="card">
+            <h2>Con số nỗi đau thực tế (Mining chatlog K4)</h2>
+            <div class="stat">84%</div>
+            <div class="stat-sub">Số lượt trao đổi của học viên gặp tình trạng AI trả lời không có căn cứ hoặc trả lời mơ hồ khi thiếu cơ chế grounding.</div>
+            <div style="margin-top: 15px; font-size: 13px; color: var(--text-muted);">
+              <strong>Minh chứng Turn ID thật:</strong> T10293 (bịa so sánh), T10316 (đoán mò câu hỏi cụt), T10303 (bịa hạn nộp bài).
+            </div>
           </div>
         </div>
       </div>
-      <div class="card">
-        <h2>Độ phủ 4 lớp chỗ khó (Golden Set 20 case)</h2>
-        <ul>
-          <li><strong>Lớp 1 · Ảo giác trích dẫn (TC01-05):</strong> 5/5 Pass (100%) — Guardrail chặn sạch.</li>
-          <li><strong>Lớp 2 · Suy diễn quá đà (TC06-10):</strong> 5/5 Pass (100%) — Từ chối chuẩn Case C.</li>
-          <li><strong>Lớp 3 · Đại từ mơ hồ (TC11-15):</strong> 4/5 Pass &rarr; Nâng lên 5/5 sau tinh chỉnh prompt Priority 1.</li>
-          <li><strong>Lớp 4 · Ngoài phạm vi / Bẫy (TC16-20):</strong> 5/5 Pass (100%) — Kháng prompt injection.</li>
-        </ul>
+      <div class="footer">
+        <span>Hackathon AI K4 · Lớp 3A · Room E403</span>
+        <span class="presenter">Trình bày: Đặng Hữu Cương (45s)</span>
       </div>
-    </div>
-  </div>
-  <div class="footer">
-    <span>Nhóm y0sh1da · eval/golden_set.json</span>
-    <span class="presenter">Trình bày: Đặng Hữu Cương (45s)</span>
-  </div>
-</section>
+    </section>
 
-<!-- SLIDE 5 -->
-<section class="slide">
-  <div class="header">
-    <span class="tag">SLIDE 5 · USER THẬT NÓI GÌ & VALIDATION (R6)</span>
-    <span class="slide-num">05 / 06</span>
-  </div>
-  <div class="content">
-    <h1>Mang Ra Cho Người Dùng Thật — Phản Hồi & Cải Tiến</h1>
-    <div class="grid-2">
-      <div class="card">
-        <h2>Quote nguyên văn người dùng thử nghiệm</h2>
-        <ul>
-          <li><strong>Thân Tiến Đạt (Willing User 1):</strong> <em>"Hay ở chỗ nó chỉ rõ nguồn ở Slide 12 và chép đúng câu trong slide ra. Bình thường hỏi ChatGPT nó hay chém gió lan man sang cái chưa học."</em></li>
-          <li><strong>Vũ Gia Khải (Willing User 2):</strong> <em>"Lúc đầu mình gõ 'cái này là gì', nó không đoán bừa mà hỏi lại mình muốn hỏi về Data Lake hay lưu trữ thô. Như vậy rất chuẩn."</em></li>
-        </ul>
+    <!-- SLIDE 2 -->
+    <section class="slide" id="slide-2">
+      <div class="header">
+        <span class="tag">SLIDE 2 · BÀI TOÁN & QUYẾT ĐỊNH CHỌN</span>
+        <span class="slide-num">02 / 06</span>
       </div>
-      <div class="card card-highlight">
-        <h2>Đo lường độ thiết yếu & Cải tiến làm ngay</h2>
-        <div style="margin-bottom: 15px;">
-          <div class="stat" style="color: #facc15;">80%</div>
-          <div class="stat-sub">Tỷ lệ "Rất tiếc nếu ngày mai không được dùng Grounded Tutor nữa" (Sean Ellis Disappointment Score).</div>
+      <div class="content">
+        <h1>Tại sao chọn Grounded Tutor? — Bài toán có Cost of Error cao nhất</h1>
+        <div class="grid-3" style="margin-top: 10px;">
+          <div class="card card-highlight">
+            <h2 style="color: var(--stat-color);">A1. Grounded Tutor [CHỌN]</h2>
+            <ul>
+              <li><strong>Tần suất:</strong> Rất cao (5-10 lần/buổi học).</li>
+              <li><strong>Cost of Error:</strong> CỰC CAO (Hiểu sai định nghĩa cốt lõi, trượt môn, hỏng đồ án).</li>
+              <li><strong>Giá trị:</strong> Bảo vệ tính chuẩn xác học thuật 100%.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h2>A2. Quiz Generator [LOẠI]</h2>
+            <ul>
+              <li><strong>Tần suất:</strong> Thấp (chỉ dùng ôn thi cuối kỳ).</li>
+              <li><strong>Cost of Error:</strong> Thấp (câu hỏi trắc nghiệm dở thì sinh viên bỏ qua).</li>
+              <li><strong>Lý do loại:</strong> Không giải quyết nỗi đau cấp bách lúc đang học.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h2>A3. Auto-Summarizer [LOẠI]</h2>
+            <ul>
+              <li><strong>Tần suất:</strong> Trung bình (1 lần/chương).</li>
+              <li><strong>Cost of Error:</strong> Thấp (thiếu ý thì đọc lại slide).</li>
+              <li><strong>Lý do loại:</strong> Tương tác một chiều thụ động, không giải quyết được chỗ vướng cụ thể.</li>
+            </ul>
+          </div>
         </div>
-        <p style="font-size: 14px; color: #cbd5e1; line-height: 1.5;">
-          <strong>Cải tiến làm ngay trước demo:</strong> Khi user gõ câu hỏi cụt ("cái này"), bot từng đoán là Data Lake. Nhóm đã lập tức nâng ưu tiên nhận diện đại từ mơ hồ lên Priority 1 trong System Prompt để luôn kích hoạt Case B.
-        </p>
+        <div class="card" style="margin-top: 18px; padding: 12px 20px;">
+          <p style="font-size: 14px; color: var(--text-secondary);">
+            <strong>Khác biệt với Coursera Coach & Khanmigo:</strong> Coursera Coach hay trả lời lan man ngoài bài; Khanmigo hỏi gợi mở vòng vo khi chỉ cần tra cứu nhanh. Grounded Tutor: Đủ bằng chứng thì trích dẫn ngay; câu hỏi mơ hồ thì hỏi lại; ngoài bài thì kiên quyết từ chối.
+          </p>
+        </div>
       </div>
-    </div>
-  </div>
-  <div class="footer">
-    <span>Nhóm y0sh1da · validation/user-testing-log.md</span>
-    <span class="presenter">Trình bày: Đặng Hữu Cương / Trần Đức Lộc (45s)</span>
-  </div>
-</section>
+      <div class="footer">
+        <span>Nhóm y0sh1da · Track A1</span>
+        <span class="presenter">Trình bày: Đặng Hữu Cương (45s)</span>
+      </div>
+    </section>
 
-<!-- SLIDE 6 -->
-<section class="slide">
-  <div class="header">
-    <span class="tag">SLIDE 6 · NẾU CÓ THÊM 1 TUẦN & BÀI HỌC LỚN NHẤT</span>
-    <span class="slide-num">06 / 06</span>
-  </div>
-  <div class="content">
-    <h1>Roadmap Tương Lai & Bài Học Tư Duy Sản Phẩm AI</h1>
-    <div class="grid-2">
-      <div class="card">
-        <h2>Nếu có thêm 1 tuần (Backlog ưu tiên)</h2>
-        <ul>
-          <li><strong>Semantic Caching:</strong> Giảm độ trễ từ 12s xuống &lt; 1s cho các câu hỏi phổ biến đã được kiểm chứng.</li>
-          <li><strong>Auto PDF Ingestion:</strong> Tự động bóc tách slide từ file PDF/PPTX thành vector chunks kèm số trang tự động thay vì dán ngữ cảnh thủ công.</li>
-          <li><strong>Multi-turn Clarification:</strong> Hội thoại nhiều lượt trong Case B để đào sâu câu hỏi của người học.</li>
-        </ul>
+    <!-- SLIDE 3 -->
+    <section class="slide" id="slide-3">
+      <div class="header">
+        <span class="tag">SLIDE 3 · THIẾT KẾ GIẢI PHÁP & LIVE DEMO</span>
+        <span class="slide-num">03 / 06</span>
       </div>
-      <div class="card card-highlight" style="display: flex; flex-direction: column; justify-content: center;">
-        <h2 style="color: #818cf8;">Bài học lớn nhất sau 48 giờ</h2>
-        <p style="font-size: 22px; font-weight: 700; color: #ffffff; line-height: 1.4; margin-top: 10px;">
-          "Trong giáo dục, một AI dũng cảm từ chối và chủ động hỏi lại khi mơ hồ có giá trị và độ tin cậy gấp bội một AI cố trả lời mọi thứ nhưng chứa đầy ảo giác."
-        </p>
+      <div class="content">
+        <h1>Lát Cắt 3 Nhánh & Bộ Bảo Vệ Deterministic Guardrail</h1>
+        <div class="grid-2">
+          <div class="card">
+            <h2>Quy hoạch 3 nhánh phản hồi (HAX G2)</h2>
+            <ul>
+              <li><span class="badge-a">CASE A</span> <strong>Trả lời có trích dẫn:</strong> Đủ dữ liệu trong slide &rarr; Trích dẫn nguyên văn 100% câu gốc (HAX G10).</li>
+              <li><span class="badge-b">CASE B</span> <strong>Hỏi lại để làm rõ:</strong> Câu hỏi cụt ("cái này là gì") &rarr; Không đoán mò, hỏi lại cụ thể (HAX G11).</li>
+              <li><span class="badge-c">CASE C</span> <strong>Từ chối & hướng dẫn:</strong> Câu hỏi ngoài slide &rarr; Thẳng thắn từ chối và hướng dẫn kênh tra cứu.</li>
+            </ul>
+          </div>
+          <div class="card card-highlight">
+            <h2>Bộ Bảo Vệ Backend Guardrail (Kỹ thuật)</h2>
+            <ul>
+              <li><strong>Core Engine:</strong> OpenAI <code>gpt-5-nano</code> + Pydantic Structured Outputs.</li>
+              <li><strong>Deterministic Guardrail:</strong> Backend Python đối chiếu chuỗi <code>exact_quote in slide_context</code>.</li>
+              <li><strong>Cơ chế tự sửa (Retry loop):</strong> Nếu LLM bịa nguồn &rarr; Chặn lại và ép Re-evaluate lượt 2. Triệt tiêu 100% ảo giác!</li>
+              <li><strong>Trực tiếp Live Demo:</strong> Test Case A chuẩn + Test Case B chỗ khó.</li>
+            </ul>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
-  <div class="footer">
-    <span>Nhóm y0sh1da · K4-3A-E403-y0sh1da</span>
-    <span class="presenter">Trình bày: Cả 3 thành viên (30s) — Xin cảm ơn Ban Giám Khảo!</span>
-  </div>
-</section>
+      <div class="footer">
+        <span>Nhóm y0sh1da · Live Prototype</span>
+        <span class="presenter">Demo: Trần Đức Lộc · Giải thích kỹ thuật: Nguyễn Minh Đức (2 phút)</span>
+      </div>
+    </section>
 
+    <!-- SLIDE 4 -->
+    <section class="slide" id="slide-4">
+      <div class="header">
+        <span class="tag">SLIDE 4 · KẾT QUẢ ĐO KIỂM & QUALITY BAR</span>
+        <span class="slide-num">04 / 06</span>
+      </div>
+      <div class="content">
+        <h1>Kiểm Thử Định Lượng — Khóa Chuẩn Chất Lượng (Quality Bar)</h1>
+        <div class="grid-2">
+          <div class="card card-highlight">
+            <h2>Cam kết Quality Bar (Khóa tại CP4)</h2>
+            <p style="font-size: 17px; color: var(--stat-color); font-weight: 700; margin-bottom: 15px;">
+              "Pass &ge; 85% trên Golden Set 20 case, và 0% bịa đặt trích dẫn (0 Citation Fabrication)"
+            </p>
+            <div style="display: flex; gap: 30px; margin-top: 15px;">
+              <div>
+                <div class="stat" style="color: #34d399;">95%</div>
+                <div class="stat-sub">Tỷ lệ Pass thực tế (19/20 case)</div>
+              </div>
+              <div>
+                <div class="stat" style="color: #34d399;">0</div>
+                <div class="stat-sub">Lỗi ảo giác trích dẫn (0%)</div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <h2>Độ phủ 4 lớp chỗ khó (Golden Set 20 case)</h2>
+            <ul>
+              <li><strong>Lớp 1 · Ảo giác trích dẫn (TC01-05):</strong> 5/5 Pass (100%) — Guardrail chặn sạch.</li>
+              <li><strong>Lớp 2 · Suy diễn quá đà (TC06-10):</strong> 5/5 Pass (100%) — Từ chối chuẩn Case C.</li>
+              <li><strong>Lớp 3 · Đại từ mơ hồ (TC11-15):</strong> 4/5 Pass &rarr; Nâng lên 5/5 sau tinh chỉnh prompt Priority 1.</li>
+              <li><strong>Lớp 4 · Ngoài phạm vi / Bẫy (TC16-20):</strong> 5/5 Pass (100%) — Kháng prompt injection.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="footer">
+        <span>Nhóm y0sh1da · eval/golden_set.json</span>
+        <span class="presenter">Trình bày: Đặng Hữu Cương (45s)</span>
+      </div>
+    </section>
+
+    <!-- SLIDE 5 -->
+    <section class="slide" id="slide-5">
+      <div class="header">
+        <span class="tag">SLIDE 5 · USER THẬT NÓI GÌ & VALIDATION (R6)</span>
+        <span class="slide-num">05 / 06</span>
+      </div>
+      <div class="content">
+        <h1>Mang Ra Cho Người Dùng Thật — Phản Hồi & Cải Tiến</h1>
+        <div class="grid-2">
+          <div class="card">
+            <h2>Quote nguyên văn người dùng thử nghiệm</h2>
+            <ul>
+              <li><strong>Thân Tiến Đạt (Willing User 1):</strong> <em>"Hay ở chỗ nó chỉ rõ nguồn ở Slide 12 và chép đúng câu trong slide ra. Bình thường hỏi ChatGPT nó hay chém gió lan man sang cái chưa học."</em></li>
+              <li><strong>Vũ Gia Khải (Willing User 2):</strong> <em>"Lúc đầu mình gõ 'cái này là gì', nó không đoán bừa mà hỏi lại mình muốn hỏi về Data Lake hay lưu trữ thô. Như vậy rất chuẩn."</em></li>
+            </ul>
+          </div>
+          <div class="card card-highlight">
+            <h2>Đo lường độ thiết yếu & Cải tiến làm ngay</h2>
+            <div style="margin-bottom: 12px;">
+              <div class="stat" style="color: #facc15;">80%</div>
+              <div class="stat-sub">Tỷ lệ "Rất tiếc nếu ngày mai không được dùng Grounded Tutor nữa" (Sean Ellis Disappointment Score).</div>
+            </div>
+            <p style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.45;">
+              <strong>Cải tiến làm ngay trước demo:</strong> Khi user gõ câu hỏi cụt ("cái này"), bot từng đoán là Data Lake. Nhóm đã lập tức nâng ưu tiên nhận diện đại từ mơ hồ lên Priority 1 trong System Prompt để luôn kích hoạt Case B.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="footer">
+        <span>Nhóm y0sh1da · validation/user-testing-log.md</span>
+        <span class="presenter">Trình bày: Đặng Hữu Cương / Trần Đức Lộc (45s)</span>
+      </div>
+    </section>
+
+    <!-- SLIDE 6 -->
+    <section class="slide" id="slide-6">
+      <div class="header">
+        <span class="tag">SLIDE 6 · NẾU CÓ THÊM 1 TUẦN & BÀI HỌC LỚN NHẤT</span>
+        <span class="slide-num">06 / 06</span>
+      </div>
+      <div class="content">
+        <h1>Roadmap Tương Lai & Bài Học Tư Duy Sản Phẩm AI</h1>
+        <div class="grid-2">
+          <div class="card">
+            <h2>Nếu có thêm 1 tuần (Backlog ưu tiên)</h2>
+            <ul>
+              <li><strong>Semantic Caching:</strong> Giảm độ trễ từ 12s xuống &lt; 1s cho các câu hỏi phổ biến đã được kiểm chứng.</li>
+              <li><strong>Auto PDF Ingestion:</strong> Tự động bóc tách slide từ file PDF/PPTX thành vector chunks kèm số trang tự động thay vì dán ngữ cảnh thủ công.</li>
+              <li><strong>Multi-turn Clarification:</strong> Hội thoại nhiều lượt trong Case B để đào sâu câu hỏi của người học.</li>
+            </ul>
+          </div>
+          <div class="card card-highlight" style="display: flex; flex-direction: column; justify-content: center;">
+            <h2 style="color: var(--accent);">Bài học lớn nhất sau 48 giờ</h2>
+            <p style="font-size: 21px; font-weight: 700; color: var(--text-main); line-height: 1.4; margin-top: 10px;">
+              "Trong giáo dục, một AI dũng cảm từ chối và chủ động hỏi lại khi mơ hồ có giá trị và độ tin cậy gấp bội một AI cố trả lời mọi thứ nhưng chứa đầy ảo giác."
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="footer">
+        <span>Nhóm y0sh1da · K4-3A-E403-y0sh1da</span>
+        <span class="presenter">Trình bày: Cả 3 thành viên (30s) — Xin cảm ơn Ban Giám Khảo!</span>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<script>
+  (function() {
+    const totalSlides = 6;
+    let currentSlide = 0;
+    
+    const track = document.getElementById('slidesTrack');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const progressLine = document.getElementById('progressLine');
+    const slideIndicator = document.getElementById('slideIndicator');
+    const dots = document.querySelectorAll('.dot');
+    const themeBtn = document.getElementById('themeBtn');
+    const themeLabel = document.getElementById('themeLabel');
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+    const printBtn = document.getElementById('printBtn');
+
+    function updateSlide(index) {
+      if (index < 0) index = 0;
+      if (index >= totalSlides) index = totalSlides - 1;
+      currentSlide = index;
+
+      // Move track
+      track.style.transform = `translateX(-${currentSlide * 100}vw)`;
+
+      // Update buttons
+      prevBtn.disabled = (currentSlide === 0);
+      nextBtn.disabled = (currentSlide === totalSlides - 1);
+
+      // Update progress line
+      const progressPercent = ((currentSlide + 1) / totalSlides) * 100;
+      progressLine.style.width = `${progressPercent}%`;
+
+      // Update indicator text
+      slideIndicator.textContent = `0${currentSlide + 1} / 0${totalSlides}`;
+
+      // Update dots
+      dots.forEach((dot, i) => {
+        dot.classList.toggle('active', i === currentSlide);
+      });
+
+      // Update URL hash without scrolling
+      history.replaceState(null, null, `#slide-${currentSlide + 1}`);
+    }
+
+    // Prev / Next actions
+    function next() {
+      if (currentSlide < totalSlides - 1) updateSlide(currentSlide + 1);
+    }
+    function prev() {
+      if (currentSlide > 0) updateSlide(currentSlide - 1);
+    }
+
+    prevBtn.addEventListener('click', prev);
+    nextBtn.addEventListener('click', next);
+
+    // Click dots
+    dots.forEach((dot) => {
+      dot.addEventListener('click', (e) => {
+        const target = parseInt(e.currentTarget.getAttribute('data-slide'), 10);
+        updateSlide(target);
+      });
+    });
+
+    // Keyboard navigation
+    window.addEventListener('keydown', (e) => {
+      // Don't trigger if user is typing in an input
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+      switch(e.key) {
+        case 'ArrowRight':
+        case 'ArrowDown':
+        case ' ':
+        case 'PageDown':
+          e.preventDefault();
+          next();
+          break;
+        case 'ArrowLeft':
+        case 'ArrowUp':
+        case 'PageUp':
+          e.preventDefault();
+          prev();
+          break;
+        case 'Home':
+          e.preventDefault();
+          updateSlide(0);
+          break;
+        case 'End':
+          e.preventDefault();
+          updateSlide(totalSlides - 1);
+          break;
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+          updateSlide(parseInt(e.key, 10) - 1);
+          break;
+        case 'f':
+        case 'F':
+          toggleFullscreen();
+          break;
+      }
+    });
+
+    // Touch Swipe Support
+    let touchStartX = 0;
+    let touchEndX = 0;
+    const viewport = document.getElementById('deckViewport');
+
+    viewport.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    viewport.addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      handleSwipe();
+    }, { passive: true });
+
+    function handleSwipe() {
+      const diff = touchStartX - touchEndX;
+      if (Math.abs(diff) > 45) {
+        if (diff > 0) next();
+        else prev();
+      }
+    }
+
+    // Fullscreen Toggle
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => console.log(err));
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+      }
+    }
+    fullscreenBtn.addEventListener('click', toggleFullscreen);
+
+    // Theme Toggle
+    themeBtn.addEventListener('click', () => {
+      document.body.classList.toggle('light-mode');
+      const isLight = document.body.classList.contains('light-mode');
+      themeLabel.textContent = isLight ? 'Nền tối' : 'Nền sáng';
+    });
+
+    // Print Button
+    printBtn.addEventListener('click', () => {
+      window.print();
+    });
+
+    // Check initial hash
+    const hash = window.location.hash;
+    if (hash && hash.startsWith('#slide-')) {
+      const num = parseInt(hash.replace('#slide-', ''), 10);
+      if (!isNaN(num) && num >= 1 && num <= totalSlides) {
+        updateSlide(num - 1);
+        return;
+      }
+    }
+    updateSlide(0);
+  })();
+</script>
 </body>
 </html>
