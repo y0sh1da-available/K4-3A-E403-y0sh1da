@@ -19,3 +19,7 @@ __pycache__/
 Thumbs.db
 .vscode/
 .idea/
+
+# Internal team docs (not for grading)
+CP5_AND_CP6_INSTRUCTIONS_FOR_TEAM.md
+SLIDE_PITCH_CONTENT.md
